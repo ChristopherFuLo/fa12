@@ -58,8 +58,12 @@ class AppQuery
   #         * :longitude - the longitude
   # Output: None
   def get_posts_for_location(location_id)
-    @location = {}
     @posts = []
+    @location = Locations.find(location_id)
+    Posts.where("location_id = ?", location_id).order("timestamp").select("posts_id, content, created_at, user_id").each do |singlePost|
+      tempHash = {:author_id=>singlePost.user_id, :author=>Users.find(singlePost.user_id).name, :text=>singlePost.content), :created_at=>singlePost.created_at)}
+      tempHash.update(@location)
+      @posts << tempHash
   end
 
   # Purpose: Show the current user's stream of posts from all the locations the user follows
@@ -81,6 +85,12 @@ class AppQuery
   # Output: None
   def get_stream_for_user(user_id)
     @posts = []
+    Posts.where("user_id = ?", user_id).order("timestamp").each do |singlePost|
+      tempLocation = Locations.find(singlePost.location_id)
+      tempHash = {:author_id=>singlePost.user_id, :author=>Users.find(singlePost.user_id).name, :text=>singlePost.content), :created_at=>singlePost.created_at)}
+      @posts << tempHash
+      @posts << tempLocation
+    end
   end
 
   # Purpose: Retrieve the locations within a GPS bounding box
@@ -158,7 +168,15 @@ class AppQuery
   # Assign: None
   # Output: true if the creation is successful, false otherwise
   def create_post(user_id, post_hash={})
-    false
+    begin
+      tempHash = post_hash
+      tempHash.update(:author_id=>user_id)
+      @post = Posts.new(tempHash)
+      @post.save
+      return true
+    rescue RecordInvalid => e
+      false
+    end
   end
 
   # Purpose: Create a new user
@@ -176,8 +194,13 @@ class AppQuery
   # Output: true if the creation is successful, false otherwise
   # NOTE: This method is already implemented, but you are allowed to modify it if needed.
   def create_user(user_hash={})
-    @user = User.new(user_hash)
-    @user.save
+    begin
+      @user = User.new(user_hash)
+      @user.save
+      return true
+    rescue RecordInvalid => e
+      return false
+    end
   end
 
   # Purpose: Get all the posts
@@ -198,6 +221,12 @@ class AppQuery
   # Output: None
   def get_all_posts
     @posts = []
+    ActiveRecords::Base.connection.execute("SELECT * from posts").each do |singlePost|
+      tempLocation = Locations.find(singlePost.location_id)
+      tempHash = {:author_id=>singlePost.user_id, :author=>Users.find(singlePost.user_id).name, :text=>singlePost.content), :created_at=>singlePost.created_at)}
+      @posts << tempHash
+      @posts << tempLocation
+    end
   end
 
   # Purpose: Get all the users
@@ -212,6 +241,9 @@ class AppQuery
   # Output: None
   def get_all_users
     @users = []
+    ActiveRecords::Base.connection.execute("SELECT * from Users").each do |singleUser|
+      @users << singleUser
+    end
   end
 
   # Purpose: Get all the locations
@@ -227,6 +259,9 @@ class AppQuery
   # Output: None
   def get_all_locations
     @locations = []
+    ActiveRecords::Base.connection.execute("SELECT * from Locations").each do |singleLocation|
+      @locations << singleLocation
+    end
   end
 
   # Retrieve the top 5 users who created the most posts.
