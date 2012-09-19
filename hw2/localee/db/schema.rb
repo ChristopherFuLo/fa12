@@ -11,7 +11,23 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120905195452) do
+ActiveRecord::Schema.define(:version => 20120919042923) do
+
+  create_table "locations", :force => true do |t|
+    t.string   "name"
+    t.integer  "latitude"
+    t.integer  "longitude"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "posts", :force => true do |t|
+    t.text     "content"
+    t.integer  "users_id"
+    t.integer  "locations_id"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
+  end
 
   create_table "users", :force => true do |t|
     t.string   "name"
@@ -19,6 +35,13 @@ ActiveRecord::Schema.define(:version => 20120905195452) do
     t.string   "password_digest"
     t.datetime "created_at",      :null => false
     t.datetime "updated_at",      :null => false
+  end
+
+  create_table "userslocations", :force => true do |t|
+    t.integer  "users_id"
+    t.integer  "locations_id"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
   end
 
 end
