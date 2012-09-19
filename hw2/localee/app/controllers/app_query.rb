@@ -61,10 +61,11 @@ class AppQuery
   def get_posts_for_location(location_id)
     @posts = []
     @location = Locations.find(location_id)
-    Posts.where("location_id = ?", location_id).order("timestamp").select("posts_id, content, created_at, user_id").each do |singlePost|
-      tempHash = {:author_id=>singlePost.user_id, :author=>Users.find(singlePost.user_id).name, :text=>singlePost.content), :created_at=>singlePost.created_at)}
+    Posts.where("location_id = ?", location_id).order("timestamp").select("posts_id, content, created_at, users_id").each do |singlePost|
+      tempHash = {:author_id=>singlePost.users_id, :author=>Users.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
       tempHash.update(@location)
       @posts << tempHash
+    end
   end
 
   # Purpose: Show the current user's stream of posts from all the locations the user follows
@@ -86,9 +87,9 @@ class AppQuery
   # Output: None
   def get_stream_for_user(user_id)
     @posts = []
-    Posts.where("user_id = ?", user_id).order("timestamp").each do |singlePost|
-      tempLocation = Locations.find(singlePost.location_id)
-      tempHash = {:author_id=>singlePost.user_id, :author=>Users.find(singlePost.user_id).name, :text=>singlePost.content), :created_at=>singlePost.created_at)}
+    Posts.where("users_id = ?", user_id).order("timestamp").each do |singlePost|
+      tempLocation = Locations.find(singlePost.locations_id)
+      tempHash = {:author_id=>singlePost.users_id, :author=>Users.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
       @posts << tempHash
       @posts << tempLocation
     end
@@ -200,12 +201,11 @@ class AppQuery
   # Output: true if the creation is successful, false otherwise
   def create_post(user_id, post_hash={})
     begin
-      tempHash = post_hash
-      tempHash.update(:author_id=>user_id)
-      @post = Posts.new(tempHash)
-      @post.save
+      tempHash = {:users_id => user_id, :locations_id=>post_hash[:location_id], :content=>post_hash[:text]}
+      @posts = Posts.new(tempHash)
+      @posts.save
       return true
-    rescue RecordInvalid => e
+    rescue ActiveRecord::RecordInvalid => e
       false
     end
   end
@@ -229,7 +229,7 @@ class AppQuery
       @user = User.new(user_hash)
       @user.save
       return true
-    rescue RecordInvalid => e
+    rescue ActiveRecord::RecordInvalid => e
       return false
     end
   end
@@ -252,9 +252,9 @@ class AppQuery
   # Output: None
   def get_all_posts
     @posts = []
-    ActiveRecords::Base.connection.execute("SELECT * from posts").each do |singlePost|
-      tempLocation = Locations.find(singlePost.location_id)
-      tempHash = {:author_id=>singlePost.user_id, :author=>Users.find(singlePost.user_id).name, :text=>singlePost.content), :created_at=>singlePost.created_at)}
+    ActiveRecord::Base.connection.execute("SELECT * from posts").each do |singlePost|
+      tempLocation = Locations.find(singlePost["locations_id"])
+      tempHash = {:author_id=>singlePost["users_id"], :author=>User.find(singlePost["users_id"]).name, :text=>singlePost["content"], :created_at=>singlePost["created_at"]}
       @posts << tempHash
       @posts << tempLocation
     end
@@ -272,7 +272,7 @@ class AppQuery
   # Output: None
   def get_all_users
     @users = []
-    ActiveRecords::Base.connection.execute("SELECT * from Users").each do |singleUser|
+    ActiveRecord::Base.connection.execute("SELECT * from Users").each do |singleUser|
       @users << singleUser
     end
   end
@@ -290,7 +290,7 @@ class AppQuery
   # Output: None
   def get_all_locations
     @locations = []
-    ActiveRecords::Base.connection.execute("SELECT * from Locations").each do |singleLocation|
+    ActiveRecord::Base.connection.execute("SELECT * from Locations").each do |singleLocation|
       @locations << singleLocation
     end
   end

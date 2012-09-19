@@ -1,8 +1,10 @@
 class Posts < ActiveRecord::Base
-  attr_accessible :content
+  attr_accessible :content, :users_id, :locations_id
 
   # Validations
   validates :content, :presence => true
+  validates :users_id, :presence => true
+  validates :locations_id, :presence => true
 
   #Associations
   belongs_to :user
