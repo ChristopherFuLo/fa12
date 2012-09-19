@@ -1,7 +1,9 @@
 class CreateUserslocations < ActiveRecord::Migration
-  def up
-  end
-
-  def down
+  def change
+    create_table :userslocations do |t|
+      t.integer :users_id
+      t.integer :locations_id
+      t.timestamps
+    end
   end
 end

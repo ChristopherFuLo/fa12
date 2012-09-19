@@ -38,10 +38,8 @@ ActiveRecord::Schema.define(:version => 20120919042923) do
   end
 
   create_table "userslocations", :force => true do |t|
-    t.integer  "users_id"
-    t.integer  "locations_id"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.integer "users_id"
+    t.integer "locations_id"
   end
 
 end

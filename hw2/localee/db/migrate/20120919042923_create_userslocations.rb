@@ -3,7 +3,6 @@ class CreateUserslocations < ActiveRecord::Migration
     create_table :userslocations do |t|
       t.integer :users_id
       t.integer :locations_id
-      t.timestamps
     end
   end
 end
