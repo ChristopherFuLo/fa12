@@ -1,0 +1,6 @@
+class Movie < ActiveRecord::Base
+
+  def Movie.allRatings
+    Movie.select(:rating).map(&:rating).uniq
+  end
+end
