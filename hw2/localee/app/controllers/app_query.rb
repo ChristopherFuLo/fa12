@@ -61,9 +61,10 @@ class AppQuery
   def get_posts_for_location(location_id)
     @posts = []
     @location = Locations.find(location_id)
-    Posts.where("location_id = ?", location_id).order("timestamp").select("posts_id, content, created_at, users_id").each do |singlePost|
-      tempHash = {:author_id=>singlePost.users_id, :author=>Users.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
-      tempHash.update(@location)
+    Posts.where("locations_id = ?", location_id).order("created_at DESC").each do |singlePost|
+      tempHash = {:author_id=>singlePost.users_id, :author=>User.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
+      tempHash.update(:id=>@location[:locations_id], :name=>@location[:name], :latitude=>@location[:latitude], :longitude=>@location[:longitude])
+      # TODO, put location information into tempHash
       @posts << tempHash
     end
   end
