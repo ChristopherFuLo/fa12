@@ -149,6 +149,7 @@ DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arb
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:122)
 Connecting to database specified by database.yml
 Connecting to database specified by database.yml
+<<<<<<< HEAD
 SQLite3::SQLException: near "(": syntax error: DELETE from Userslocations (users_id, locations_id) VALUES(1, 1)
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:133)
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:133)
@@ -157,3 +158,15 @@ DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arb
 Connecting to database specified by database.yml
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:134)
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:134)
+=======
+SQLite3::SQLException: no such column: posts_id: SELECT posts_id, content, created_at, users_id FROM "posts"  WHERE (location_id = '1') ORDER BY timestamp
+SQLite3::SQLException: no such column: posts_id: SELECT posts_id, content, created_at, users_id FROM "posts"  WHERE (location_id = 1) ORDER BY timestamp
+Connecting to database specified by database.yml
+Connecting to database specified by database.yml
+Connecting to database specified by database.yml
+Binary data inserted for `string` type on column `password_digest`
+Connecting to database specified by database.yml
+Connecting to database specified by database.yml
+Connecting to database specified by database.yml
+Connecting to database specified by database.yml
+>>>>>>> 19a482f7e19134036e2c35c03c1368ebdb964bfa
