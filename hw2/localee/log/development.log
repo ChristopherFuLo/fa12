@@ -148,3 +148,12 @@ Connecting to database specified by database.yml
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:122)
 DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:122)
 Connecting to database specified by database.yml
+Connecting to database specified by database.yml
+SQLite3::SQLException: near "(": syntax error: DELETE from Userslocations (users_id, locations_id) VALUES(1, 1)
+DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:133)
+DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:133)
+DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:133)
+DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:135)
+Connecting to database specified by database.yml
+DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:134)
+DEPRECATION WARNING: You're trying to create an attribute `follows'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from block (3 levels) in get_nearby_locations at /home/ubuntu/hw2/localee/app/controllers/app_query.rb:134)

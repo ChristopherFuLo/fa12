@@ -33,7 +33,7 @@ class AppQuery
     listOfUsersLocations.each do |userLocations|
       @following_locations << Locations.find(userLocations["locations_id"])
     end
-    @following_locations
+  nil
   end
 
   # Purpose: Show the information and all posts for a given location
@@ -63,10 +63,10 @@ class AppQuery
     @location = Locations.find(location_id)
     Posts.where("locations_id = ?", location_id).order("created_at DESC").each do |singlePost|
       tempHash = {:author_id=>singlePost.users_id, :author=>User.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
-      tempHash.update(:id=>@location[:locations_id], :name=>@location[:name], :latitude=>@location[:latitude], :longitude=>@location[:longitude])
-      # TODO, put location information into tempHash
+      tempHash.update(:location => { :id=>@location[:id], :name=>@location[:name], :latitude=>@location[:latitude], :longitude=>@location[:longitude] } )
       @posts << tempHash
     end
+  nil
   end
 
   # Purpose: Show the current user's stream of posts from all the locations the user follows
@@ -94,6 +94,7 @@ class AppQuery
       @posts << tempHash
       @posts << tempLocation
     end
+  nil
   end
 
   # Purpose: Retrieve the locations within a GPS bounding box
@@ -116,28 +117,18 @@ class AppQuery
   # Output: None
   def get_nearby_locations(nelat, nelng, swlat, swlng, user_id)
   @locations = []
-    array = []
-    width = nelng - swlng
-    height = nelat - swlat
-    (1..width).to_a.each do |i|
-	(1..height).to_a.each do |j|
-	  currentLat = swlat + i.to_s.to_i
-          currentLong = swlng + j.to_s.to_i
-          listOfLocations = Locations.where("longitude = ?", currentLong).where("latitude = ?", currentLat)
-	  listOfLocations.each do |location|
-		(ActiveRecord::Base.connection.execute("SELECT * from Userslocations where locations_id = #{location["id"]}")).each do |element|
-		    array << element
-                end
-	        if array.length == 1 
-			location[:follows] = true
+    listOfLocations = Locations.where("longitude >= ?", swlng).where("longitude <= ?", nelng).where("latitude >= ?", swlat).where("latitude <= ?", nelat).limit(50)
+    listOfLocations.each do |location|
+         userLocation = (ActiveRecord::Base.connection.execute("SELECT * from Userslocations where locations_id = #{location["id"]} AND users_id = #{user_id}"))
+tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:latitude], :longitude=>location[:longitude]}
+	        if userLocation.size >= 1
+			tempHash.merge!( {:follows=>true} )
 		else		
-			location[:follows] = false
+			tempHash.merge!( {:follows=>false} )
 		end		
-		@locations << location
-	  end
-	end
+		@locations << tempHash
     end
-   @locations
+    nil
   end
 
   # Purpose: Create a new location
@@ -161,6 +152,7 @@ class AppQuery
     end
     @location = Locations.new(location_hash)
     @location.save
+    return true
   end
 
   # Purpose: The current user follows a location
@@ -174,6 +166,7 @@ class AppQuery
   #       Your schema/models/code should prevent corruption of the database.
   def follow_location(user_id, location_id)
     ActiveRecord::Base.connection.execute("INSERT into Userslocations (users_id, locations_id) VALUES(#{user_id}, #{location_id})")
+  nil
   end
 
   # Purpose: The current user unfollows a location
@@ -186,6 +179,8 @@ class AppQuery
   #       we may call it multiple times to test your schema/models.
   #       Your schema/models/code should prevent corruption of the database.
   def unfollow_location(user_id, location_id)
+	ActiveRecord::Base.connection.execute("DELETE from Userslocations where users_id = #{user_id} AND locations_id = #{location_id}")
+  nil
   end
 
   # Purpose: The current user creates a post to a given location
@@ -201,14 +196,13 @@ class AppQuery
   # Assign: None
   # Output: true if the creation is successful, false otherwise
   def create_post(user_id, post_hash={})
-    begin
+    if post_hash[:location_id] == nil or post_hash[:text] == nil
+      return false
+    end
       tempHash = {:users_id => user_id, :locations_id=>post_hash[:location_id], :content=>post_hash[:text]}
       @posts = Posts.new(tempHash)
       @posts.save
       return true
-    rescue ActiveRecord::RecordInvalid => e
-      false
-    end
   end
 
   # Purpose: Create a new user
@@ -226,13 +220,16 @@ class AppQuery
   # Output: true if the creation is successful, false otherwise
   # NOTE: This method is already implemented, but you are allowed to modify it if needed.
   def create_user(user_hash={})
+    if user_hash[:name] == nil or user_hash[:email] == nil or user_hash[:password] == nil
+	return false
+    end
     begin
       @user = User.new(user_hash)
       @user.save
-      return true
-    rescue ActiveRecord::RecordInvalid => e
+    rescue ActiveRecord::Rollback => e
       return false
     end
+    return true
   end
 
   # Purpose: Get all the posts
@@ -256,9 +253,10 @@ class AppQuery
     ActiveRecord::Base.connection.execute("SELECT * from posts").each do |singlePost|
       tempLocation = Locations.find(singlePost["locations_id"])
       tempHash = {:author_id=>singlePost["users_id"], :author=>User.find(singlePost["users_id"]).name, :text=>singlePost["content"], :created_at=>singlePost["created_at"]}
+      tempHash.merge!( {:location => {:id => tempLocation[:id], :latitude => tempLocation[:latitude], :longitude => tempLocation[:longitude], :name => tempLocation[:name]}} )
       @posts << tempHash
-      @posts << tempLocation
     end
+  nil
   end
 
   # Purpose: Get all the users
@@ -276,6 +274,7 @@ class AppQuery
     ActiveRecord::Base.connection.execute("SELECT * from Users").each do |singleUser|
       @users << singleUser
     end
+  nil
   end
 
   # Purpose: Get all the locations
@@ -294,6 +293,7 @@ class AppQuery
     ActiveRecord::Base.connection.execute("SELECT * from Locations").each do |singleLocation|
       @locations << singleLocation
     end
+  nil
   end
 
   # Retrieve the top 5 users who created the most posts.
