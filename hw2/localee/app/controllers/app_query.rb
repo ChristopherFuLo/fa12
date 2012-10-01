@@ -64,9 +64,9 @@ class AppQuery
     Posts.where("locations_id = ?", location_id).order("created_at DESC").each do |singlePost|
       tempHash = {:author_id=>singlePost.users_id, :author=>User.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
       tempHash.update(:id=>@location[:locations_id], :name=>@location[:name], :latitude=>@location[:latitude], :longitude=>@location[:longitude])
-      # TODO, put location information into tempHash
       @posts << tempHash
     end
+    @posts
   end
 
   # Purpose: Show the current user's stream of posts from all the locations the user follows
@@ -88,12 +88,13 @@ class AppQuery
   # Output: None
   def get_stream_for_user(user_id)
     @posts = []
-    Posts.where("users_id = ?", user_id).order("timestamp").each do |singlePost|
+    Posts.where("users_id = ?", user_id).order("created_at DESC").each do |singlePost|
       tempLocation = Locations.find(singlePost.locations_id)
-      tempHash = {:author_id=>singlePost.users_id, :author=>Users.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
+      tempHash = {:author_id=>singlePost.users_id, :author=>User.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
+      tempHash.update(:location=> {:id=>tempLocation[:id], :name=>tempLocation[:name], :latitude=>tempLocation[:latitude], :longitude=>tempLocation[:longitude]})
       @posts << tempHash
-      @posts << tempLocation
     end
+    @posts
   end
 
   # Purpose: Retrieve the locations within a GPS bounding box
@@ -303,7 +304,13 @@ class AppQuery
   #   * name - name of the user
   #   * num_posts - number of posts the user has created
   def top_users_posts_sql
-    "SELECT '' AS name, 0 AS num_posts FROM users WHERE 1=2"
+    "SELECT u.id, count(*) AS num_posts 
+      FROM Users u, Posts p 
+      WHERE u.id = p.users_id 
+      GROUP BY u.id 
+      ORDER BY num_name DESC 
+      LIMIT 5
+    "
   end
 
   # Retrieve the top 5 locations with the most unique posters. Only retrieve locations with at least 2 unique posters.
@@ -313,7 +320,12 @@ class AppQuery
   #   * name - name of the location
   #   * num_users - number of unique users who have posted to the location
   def top_locations_unique_users_sql
-    "SELECT '' AS name, 0 AS num_users FROM users WHERE 1=2"
+    ActiveRecord::Base.connection.execute("SELECT num_users, name 
+      FROM (SELECT COUNT(*) as num_users, name 
+        FROM (SELECT DISTINCT name, users_id 
+          FROM Posts P, Locations L WHERE P.locations_id=L.id GROUP BY name, users_id) 
+        GROUP BY name ORDER BY num_users DESC) 
+      WHERE num_users > 1")
   end
 
   # Retrieve the top 5 users who follow the most locations, where each location has at least 2 posts
@@ -325,5 +337,5 @@ class AppQuery
   def top_users_locations_sql
     "SELECT '' AS name, 0 AS num_locations FROM users WHERE 1=2"
   end
-
+ActiveRecord::Base.connection.execute("SELECT name, COUNT(*) as num_locations FROM (SELECT DISTINCT locations_id, U.name FROM UsersLocations UL, Users U WHERE UL.users_id=U.id) GROUP BY name") 
 end
