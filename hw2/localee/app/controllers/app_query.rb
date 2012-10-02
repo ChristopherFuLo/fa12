@@ -165,7 +165,9 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #       we may call it multiple times to test your schema/models.
   #       Your schema/models/code should prevent corruption of the database.
   def follow_location(user_id, location_id)
+    if user_id != nil and location_id != nil
     ActiveRecord::Base.connection.execute("INSERT into Userslocations (users_id, locations_id) VALUES(#{user_id}, #{location_id})")
+  end
   nil
   end
 
@@ -179,7 +181,9 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #       we may call it multiple times to test your schema/models.
   #       Your schema/models/code should prevent corruption of the database.
   def unfollow_location(user_id, location_id)
+  if user_id != nil and location_id != nil
 	ActiveRecord::Base.connection.execute("DELETE from Userslocations where users_id = #{user_id} AND locations_id = #{location_id}")
+  end
   nil
   end
 
@@ -196,7 +200,7 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   # Assign: None
   # Output: true if the creation is successful, false otherwise
   def create_post(user_id, post_hash={})
-    if post_hash[:location_id] == nil or post_hash[:text] == nil
+    if post_hash[:location_id] == nil or post_hash[:text] == nil or user_id == nil
       return false
     end
       tempHash = {:users_id => user_id, :locations_id=>post_hash[:location_id], :content=>post_hash[:text]}
@@ -303,7 +307,7 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #   * name - name of the user
   #   * num_posts - number of posts the user has created
   def top_users_posts_sql
-    "SELECT u.id, count(*) AS num_posts 
+    "SELECT name, count(*) AS num_posts 
       FROM Users u, Posts p 
       WHERE u.id = p.users_id 
       GROUP BY u.id 
@@ -324,7 +328,8 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
         FROM (SELECT DISTINCT name, users_id 
           FROM Posts P, Locations L WHERE P.locations_id=L.id GROUP BY name, users_id) 
         GROUP BY name ORDER BY num_users DESC) 
-      WHERE num_users > 1"
+      WHERE num_users > 1
+      LIMIT 5"
   end
 
   # Retrieve the top 5 users who follow the most locations, where each location has at least 2 posts
@@ -334,6 +339,6 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #   * name - name of the user
   #   * num_locations - number of locations (has at least 2 posts) the user follows
   def top_users_locations_sql
-    "SELECT name, COUNT(*) as num_locations FROM (SELECT DISTINCT locations_id, U.name FROM UsersLocations UL, Users U WHERE UL.users_id=U.id AND UL.locations_id IN(SELECT id FROM (SELECT L.id, COUNT(*) as loc_posts From Locations L, Posts P WHERE L.id = P.locations_id GROUP BY name) Where loc_posts > 1)) GROUP BY name" 
+    "SELECT name, COUNT(*) as num_locations FROM (SELECT DISTINCT locations_id, name FROM UsersLocations UL, Users U WHERE UL.users_id=U.id AND UL.locations_id IN(SELECT id FROM (SELECT L.id, COUNT(*) as loc_posts From Locations L, Posts P WHERE L.id = P.locations_id GROUP BY name) Where loc_posts > 1)) GROUP BY name ORDER BY num_locations DESC LIMIT 5"
   end
 end
