@@ -274,7 +274,7 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
     ActiveRecord::Base.connection.execute("SELECT * from Users").each do |singleUser|
       @users << singleUser
     end
-  nil
+  #nil
   end
 
   # Purpose: Get all the locations
@@ -307,7 +307,7 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
       FROM Users u, Posts p 
       WHERE u.id = p.users_id 
       GROUP BY u.id 
-      ORDER BY num_name DESC 
+      ORDER BY num_posts DESC 
       LIMIT 5
     "
   end
@@ -319,12 +319,12 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #   * name - name of the location
   #   * num_users - number of unique users who have posted to the location
   def top_locations_unique_users_sql
-    ActiveRecord::Base.connection.execute("SELECT num_users, name 
+      "SELECT num_users, name 
       FROM (SELECT COUNT(*) as num_users, name 
         FROM (SELECT DISTINCT name, users_id 
           FROM Posts P, Locations L WHERE P.locations_id=L.id GROUP BY name, users_id) 
         GROUP BY name ORDER BY num_users DESC) 
-      WHERE num_users > 1")
+      WHERE num_users > 1"
   end
 
   # Retrieve the top 5 users who follow the most locations, where each location has at least 2 posts
@@ -334,7 +334,6 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #   * name - name of the user
   #   * num_locations - number of locations (has at least 2 posts) the user follows
   def top_users_locations_sql
-    "SELECT '' AS name, 0 AS num_locations FROM users WHERE 1=2"
+    "SELECT name, COUNT(*) as num_locations FROM (SELECT DISTINCT locations_id, U.name FROM UsersLocations UL, Users U WHERE UL.users_id=U.id AND UL.locations_id IN(SELECT id FROM (SELECT L.id, COUNT(*) as loc_posts From Locations L, Posts P WHERE L.id = P.locations_id GROUP BY name) Where loc_posts > 1)) GROUP BY name" 
   end
-ActiveRecord::Base.connection.execute("SELECT name, COUNT(*) as num_locations FROM (SELECT DISTINCT locations_id, U.name FROM UsersLocations UL, Users U WHERE UL.users_id=U.id) GROUP BY name") 
 end
