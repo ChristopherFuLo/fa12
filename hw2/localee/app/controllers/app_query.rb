@@ -88,7 +88,12 @@ class AppQuery
   # Output: None
   def get_stream_for_user(user_id)
     @posts = []
-    Posts.where("users_id = ?", user_id).order("created_at DESC").each do |singlePost|
+    list_of_locations_id = []
+    listOfUsersLocations = ActiveRecord::Base.connection.execute("SELECT * from Userslocations where users_id = #{user_id}")
+    listOfUsersLocations.each do |userLocations|
+      list_of_locations_id << userLocations["locations_id"]
+    end
+    Posts.where(:locations_id => list_of_locations_id).order("created_at DESC").each do |singlePost|
       tempLocation = Locations.find(singlePost.locations_id)
       tempHash = {:author_id=>singlePost.users_id, :author=>User.find(singlePost.users_id).name, :text=>singlePost.content, :created_at=>singlePost.created_at}
       tempHash.update(:location=> {:id=>tempLocation[:id], :name=>tempLocation[:name], :latitude=>tempLocation[:latitude], :longitude=>tempLocation[:longitude]})
@@ -166,7 +171,10 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   #       Your schema/models/code should prevent corruption of the database.
   def follow_location(user_id, location_id)
     if user_id != nil and location_id != nil
+    hsh = ActiveRecord::Base.connection.execute("SELECT * from Userslocations WHERE users_id = #{user_id} AND locations_id = #{location_id}")
+    if hsh.length == 0
     ActiveRecord::Base.connection.execute("INSERT into Userslocations (users_id, locations_id) VALUES(#{user_id}, #{location_id})")
+    end
   end
   nil
   end
@@ -276,9 +284,9 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   def get_all_users
     @users = []
     ActiveRecord::Base.connection.execute("SELECT * from Users").each do |singleUser|
-      @users << singleUser
+      @users << HashWithIndifferentAccess.new(singleUser)
     end
-  #nil
+  nil
   end
 
   # Purpose: Get all the locations
@@ -295,7 +303,7 @@ tempHash = {:id=>location[:id], :name=>location[:name], :latitude=>location[:lat
   def get_all_locations
     @locations = []
     ActiveRecord::Base.connection.execute("SELECT * from Locations").each do |singleLocation|
-      @locations << singleLocation
+      @locations << HashWithIndifferentAccess.new(singleLocation)
     end
   nil
   end

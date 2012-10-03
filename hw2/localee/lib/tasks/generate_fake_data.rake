@@ -27,13 +27,12 @@ task :generate_fake_data => :environment do
 
   aq.get_all_users
   user_ids = aq.users.map do |u|
-    u["id"]
+    u[:id]
   end
 
   aq.get_all_locations
   location_ids = aq.locations.map do |l|
-    #puts l["id"]
-    l["id"]
+    l[:id]
   end
 
   # add some follows
